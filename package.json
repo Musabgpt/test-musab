@@ -1,0 +1,14 @@
+{
+  "name": "m80",
+  "version": "1.0.0",
+  "description": "MusabAI project - calculator, sandbox, phonics games",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test-sandbox.mjs",
+    "dev": "node server.js & sleep 2 && echo 'Server started on http://127.0.0.1:3000'"
+  },
+  "keywords": ["calculator", "sandbox", "phonics", "android"],
+  "author": "",
+  "license": "MIT"
+}

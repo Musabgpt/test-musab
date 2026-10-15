@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="40%" stop-color="#7c3aed"/>
+      <stop offset="70%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="mountain1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4c1d95"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="mountain2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6d28d9"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="40%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+  </defs>
+
+  <!-- sky -->
+  <rect width="800" height="600" fill="url(#sky)"/>
+
+  <!-- stars -->
+  <circle cx="120" cy="80" r="2" fill="#fff" opacity="0.9"/>
+  <circle cx="300" cy="50" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="500" cy="90" r="2" fill="#fff" opacity="0.7"/>
+  <circle cx="650" cy="40" r="1.5" fill="#fff" opacity="0.9"/>
+  <circle cx="720" cy="130" r="2" fill="#fff" opacity="0.6"/>
+  <circle cx="200" cy="140" r="1.5" fill="#fff" opacity="0.7"/>
+  <circle cx="80" cy="180" r="1.5" fill="#fff" opacity="0.6"/>
+
+  <!-- sun -->
+  <circle cx="600" cy="360" r="70" fill="url(#sun)"/>
+  <circle cx="600" cy="360" r="90" fill="none" stroke="#fef08a" stroke-opacity="0.4" stroke-width="3"/>
+
+  <!-- mountains -->
+  <polygon points="0,460 180,240 360,460" fill="url(#mountain1)"/>
+  <polygon points="240,460 480,180 720,460" fill="url(#mountain2)"/>
+  <polygon points="520,460 680,280 800,460" fill="url(#mountain1)"/>
+
+  <!-- snow caps -->
+  <polygon points="480,180 445,240 455,235 470,230 485,240 515,180" fill="#e0e7ff"/>
+
+  <!-- water -->
+  <rect y="460" width="800" height="140" fill="url(#water)"/>
+
+  <!-- sun reflection -->
+  <ellipse cx="600" cy="500" rx="60" ry="15" fill="#fef08a" opacity="0.5"/>
+  <ellipse cx="600" cy="540" rx="35" ry="8" fill="#fbbf24" opacity="0.4"/>
+
+  <!-- text -->
+  <text x="400" y="575" font-family="Arial" font-size="22" fill="#ffffff" text-anchor="middle" opacity="0.9">Sunset Over the Mountains</text>
+</svg>

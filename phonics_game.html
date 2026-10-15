@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3b1f6e">
+<title>ABC Phonics Pro — تعلّم لفظ الحروف</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg1:#150b2e; --bg2:#241046; --card:rgba(255,255,255,.07); --border:rgba(255,255,255,.14);
+  --txt:#f4f1ff; --dim:#b6adcf; --acc:#ffd166; --acc2:#06d6a0; --acc3:#ef476f; --btn:#7c5cff;
+}
+body{
+  font-family:'Segoe UI',Tahoma,system-ui,sans-serif;
+  background:radial-gradient(1200px 700px at 80% -10%,#3b1f6e 0%,var(--bg1) 55%,#0b0718 100%);
+  min-height:100vh;color:var(--txt);padding:16px;overflow-x:hidden;
+}
+.wrap{max-width:680px;margin:0 auto}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-size:1.12rem;font-weight:700;letter-spacing:.2px}
+h1 small{display:block;font-size:.72rem;color:var(--dim);font-weight:500;margin-top:2px}
+.pill{background:var(--card);border:1px solid var(--border);padding:7px 12px;border-radius:999px;font-size:.78rem;white-space:nowrap}
+.pill b{color:var(--acc)}
+
+.progress{height:8px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden;margin-bottom:16px}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc2),var(--acc));border-radius:99px;transition:width .35s}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:22px 18px;text-align:center;backdrop-filter:blur(6px)}
+.letter{
+  font-size:clamp(6rem,26vw,11rem);line-height:.95;font-weight:800;
+  background:linear-gradient(180deg,#fff,#ffd166 65%,#ff9f1c);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  cursor:pointer;user-select:none;position:relative;display:inline-block;
+  filter:drop-shadow(0 12px 30px rgba(255,209,102,.28));
+}
+.letter.pop{animation:pop .45s}
+@keyframes pop{0%{transform:scale(.6) rotate(-8deg);opacity:0}60%{transform:scale(1.08) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.letter.pulse{animation:pulse .5s}
+@keyframes pulse{0%,100%{transform:scale(1)}35%{transform:scale(1.12)}70%{transform:scale(.98)}}
+
+.phonetic{margin-top:4px;color:var(--acc2);font-size:1.45rem;font-weight:700}
+.word{margin-top:12px;font-size:2rem;font-weight:700;direction:ltr}
+.word em{display:block;font-style:normal;font-size:.95rem;color:var(--dim);margin-top:4px;letter-spacing:1px}
+.meaning{margin-top:6px;color:var(--dim);font-size:1.02rem}
+
+.emoji{font-size:3.4rem;line-height:1;margin:14px auto 0;width:104px;height:104px;display:grid;place-items:center;
+  background:rgba(124,92,255,.18);border:1px solid var(--border);border-radius:26px;transition:transform .3s}
+.emoji.bounce{animation:bounce .6s}
+@keyframes bounce{0%,100%{transform:translateY(0) scale(1)}25%{transform:translateY(-12px) scale(1.06)}55%{transform:translateY(0) scale(.98)}80%{transform:translateY(-4px)}}
+
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+button{
+  font:inherit;font-weight:600;cursor:pointer;border:1px solid var(--border);
+  background:rgba(255,255,255,.08);color:var(--txt);padding:12px 16px;border-radius:14px;
+  display:inline-flex;align-items:center;gap:8px;transition:transform .12s,background .2s,opacity .2s;
+}
+button:active{transform:scale(.95)}
+button:disabled{opacity:.4;cursor:default}
+.play{background:linear-gradient(135deg,var(--btn),#9d7bff);border-color:transparent;min-width:170px;justify-content:center;font-size:1.05rem}
+.play.speaking{background:linear-gradient(135deg,var(--acc2),#0fa)}
+
+.modes{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.modes button{padding:9px 14px;font-size:.85rem;border-radius:999px}
+.modes button.on{background:linear-gradient(135deg,var(--acc),#ff9f1c);color:#3a2600;border-color:transparent}
+
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(34px,1fr));gap:5px;margin-top:18px}
+.key{padding:8px 0;text-align:center;font-size:.85rem;font-weight:700;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid transparent}
+.key.done{background:rgba(6,214,160,.22);border-color:rgba(6,214,160,.5);color:#8ff5d8}
+.key.cur{border-color:var(--acc);color:var(--acc)}
+.key:active{transform:scale(.9)}
+
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-12vh;font-size:22px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg);opacity:.1}}
+
+.status{min-height:22px;margin-top:12px;font-size:.86rem;color:var(--acc)}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="confetti hidden" id="confetti"></div>
+<div class="wrap">
+  <div class="bar">
+    <h1>🔤 ABC Phonics Pro<small>تعلّم صوت كل حرف إنجليزي</small></h1>
+    <div class="pill">⭐ <b id="done">0</b>/26</div>
+  </div>
+
+  <div class="progress"><i id="pbar"></i></div>
+
+  <div class="card">
+    <div class="letter" id="letter" role="button" tabindex="0" aria-label="اضغط لسماع صوت الحرف">A</div>
+    <div class="phonetic" id="phonetic">/æ/</div>
+    <div class="word" id="word">Apple<em>أ - ب</em></div>
+    <div class="meaning" id="meaning">تفّاحة 🍎</div>
+
+    <div class="btnrow">
+      <button class="play" id="play" aria-label="استماع">🔊 استماع</button>
+      <button id="prev" aria-label="السابق">◀ السابق</button>
+      <button id="next" aria-label="التالي">التالي ▶</button>
+    </div>
+
+    <div class="modes">
+      <button id="story" class="">📖 قصّة كبيرة (تعلم)</button>
+      <button id="quiz" class="on">🎯 اختبار سريع</button>
+    </div>
+
+    <div id="quizbox" class="btnrow"></div>
+
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="keys" id="keys"></div>
+</div>
+
+<script>
+"use strict";
+
+const DATA = [
+  ["A","/æ/","Apple","أ - ب - ل","تفّاحة"],
+  ["B","/b/","Ball","ب - و - ل","كرة ⚽"],
+  ["C","/k/","Cat","ك - ا - ت","قطة 🐱"],
+  ["D","/d/","Dog","د - و - ج","كلب 🐶"],
+  ["E","/e/","Egg","إ - ج","بيضة 🥚"],
+  ["F","/f/","Fish","ف - ش","سمكة 🐟"],
+  ["G","/g/","Goat","ج - و - ت","ماعز 🐐"],
+  ["H","/h/","Hat","ه - ا - ت","قبعة 👒"],
+  ["I","/ɪ/","Igloo","إ - ج - ل - و","كوخ ثلجي 🛖"],
+  ["J","/dʒ/","Jam","ج - ا - م","مربّى 🍯"],
+  ["K","/k/","Kite","ك - ا - ي - ت","طائرة ورقية 🪁"],
+  ["L","/l/","Lion","ل - ا - ي - و - ن","أسد 🦁"],
+  ["M","/m/","Moon","م - و - ن","قمر 🌙"],
+  ["N","/n/","Nose","ن - و - ز","أنف 👃"],
+  ["O","/ɑ/","Orange","و - ر - ن - ج","برتقالة 🍊"],
+  ["P","/p/","Pig","ب - ي - ج","خنزير 🐷"],
+  ["Q","/kw/","Queen","ك - و - ي - ن","ملكة 👑"],
+  ["R","/r/","Rain","ر - ي - ن","مطر 🌧️"],
+  ["S","/s/","Sun","س - ا - ن","شمس ☀️"],
+  ["T","/t/","Tree","ت - ر - ي","شجرة 🌳"],
+  ["U","/ʌ/","Umbrella","أ - م - ب - ر - ل - ا","مظلّة ☂️"],
+  ["V","/v/","Van","ف - ا - ن","شاحنة 🚐"],
+  ["W","/w/","Water","و - و - ت - ر","ماء 💧"],
+  ["X","/ks/","Box","ب - و - ك - س","صندوق 📦"],
+  ["Y","/j/","Yo-yo","ي - و - ي - و","يويو 🪀"],
+  ["Z","/z/","Zebra","ز - ي - ب - ا -ر","حمار وحشي 🦓"]
+];
+
+const $ = id => document.getElementById(id);
+const letterEl=$("letter"), phoneticEl=$("phonetic"), wordEl=$("word"),
+      meaningEl=$("meaning"), keysEl=$("keys"), statusEl=$("status"),
+      doneEl=$("done"), pbarEl=$("pbar"), quizboxEl=$("quizbox"),
+      confettiEl=$("confetti"), playBtn=$("play");
+
+let idx=0, mode="quiz", answered=false;
+const done = new Set();
+
+/* ---------- الصوت ---------- */
+const TTS = window.speechSynthesis || null;
+let voice=null;
+
+function pickVoice(){
+  if(!TTS) return;
+  const vs=TTS.getVoices()||[];
+  voice = vs.find(v=>/en-US/i.test(v.lang)&&/female|samantha|google/i.test(v.name))
+       || vs.find(v=>/en-US/i.test(v.lang))
+       || vs.find(v=>/^en/i.test(v.lang)) || vs[0] || null;
+}
+if(TTS){ pickVoice(); TTS.addEventListener&&TTS.addEventListener("voiceschanged",pickVoice); }
+
+function say(text,{rate=0.85,pitch=1.05}={}){
+  if(!TTS){ statusEl.textContent = "متصفحك لا يدعم الصوت — جرّب Chrome"; return Promise.resolve(); }
+  try{
+    TTS.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang="en-US"; u.rate=rate; u.pitch=pitch; u.volume=1;
+    if(voice) u.voice=voice;
+    return new Promise(res=>{ u.onend=u.onerror=res; TTS.speak(u); });
+  }catch(e){ statusEl.textContent="خطأ في الصوت"; return Promise.resolve(); }
+}
+
+/* صوت بديل بمولّد نغمات (في حال عدم وجود TTS) */
+let audio=null;
+function beep(freq,dur=0.15,type="sine"){
+  try{
+    audio = audio || new (window.AudioContext||window.webkitAudioContext)();
+    if(audio.state==="suspended") audio.resume();
+    const o=audio.createOscillator(), g=audio.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(.0001,audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(.3,audio.currentTime+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+dur);
+    o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime+dur);
+  }catch(e){}
+}
+
+/* ---------- العرض ---------- */
+function anim(el,cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+function updateDisplay(){
+  const d=DATA[idx];
+  letterEl.textContent=d[0];
+  phoneticEl.textContent=d[1];
+  wordEl.innerHTML=`${d[2]}<em>${d[3]}</em>`;
+  meaningEl.textContent=d[4];
+  doneEl.textContent=done.size;
+  pbarEl.style.width=(done.size/26*100)+"%";
+  anim(letterEl,"pop");
+  anim(document.querySelector(".emoji")||document.body,"bounce");
+  markKeys();
+  playBtn.classList.remove("speaking");
+  statusEl.textContent = done.has(idx) ? "✅ أكملت هذا الحرف" : mode==="quiz" ? "أيّ حرف يبدأ الكلمة؟" : "اضغط 🔊 لتسمع";
+  [...keysEl.children].forEach((k,i)=>k.classList.toggle("cur",i===idx));
+}
+
+function markKeys(){
+  [...keysEl.children].forEach((k,i)=>k.classList.toggle("done",done.has(i)));
+}
+
+function go(i){
+  idx=(i+DATA.length)%DATA.length;
+  answered=false;
+  buildQuiz();
+  updateDisplay();
+}
+
+async function play(){
+  const d=DATA[idx];
+  playBtn.classList.add("speaking");
+  anim(letterEl,"pulse");
+  await say(d[0]);
+  await say(d[2].toLowerCase());
+  playBtn.classList.remove("speaking");
+  done.add(idx);
+  updateDisplay();
+  if(done.size===DATA.length) celebrate();
+}
+
+/* ---------- الاختبار ---------- */
+function buildQuiz(){
+  if(mode!=="quiz") return;
+  answered=false;
+  const correct=DATA[idx][0];
+  const pool=DATA.map(d=>d[0]).filter(l=>l!==correct);
+  const opts=[correct];
+  while(opts.length<4) opts.push(pool[Math.floor(Math.random()*pool.length)]);
+  opts.sort(()=>Math.random()-0.5);
+
+  const word=DATA[idx][2];
+  quizboxEl.innerHTML="";
+  const title=document.createElement("div");
+  title.textContent=`أيّ حرف يبدأ كلمة ${word} ؟`;
+  title.style.cssText="width:100%;color:var(--dim);font-size:.9rem";
+  quizboxEl.appendChild(title);
+
+  opts.forEach(l=>{
+    const b=document.createElement("button");
+    b.textContent=l;
+    b.onclick=()=>answer(b,l,correct);
+    quizboxEl.appendChild(b);
+  });
+}
+
+async function answer(btn,picked,correct){
+  if(answered) return;
+  answered=true;
+  [...quizboxEl.querySelectorAll("button")].forEach(b=>b.disabled=true);
+  if(picked===correct){
+    btn.style.background="linear-gradient(135deg,var(--acc2),#0fa)";
+    btn.style.color="#00342a";
+    statusEl.textContent="🎉 أحسنت! إجابة صحيحة";
+    await say(correct);
+    await say(DATA[idx][2].toLowerCase());
+    done.add(idx);
+    markKeys(); updateDisplay();
+    setTimeout(()=>{ if(mode==="quiz") go(idx+1); }, 1200);
+  }else{
+    btn.style.background="linear-gradient(135deg,var(--acc3),#b3123f)";
+    btn.textContent+=" ❌";
+    statusEl.textContent="حاول مرّة أخرى 💪";
+    beep(180,.25,"square");
+    answered=false;
+    [...quizboxEl.querySelectorAll("button")].forEach(b=>b.disabled=false);
+  }
+}
+
+/* ---------- الاحتفال ---------- */
+function celebrate(){
+  statusEl.textContent="🏆 رائع! أكملت كل الحروف";
+  confettiEl.classList.remove("hidden");
+  confettiEl.innerHTML="";
+  const items=["🎉","⭐","🎊","🥳","🎈","✨"];
+  for(let i=0;i<80;i++){
+    const c=document.createElement("i");
+    c.textContent=items[Math.floor(Math.random()*items.length)];
+    c.style.left=Math.random()*100+"vw";
+    c.style.animationDuration=(2.2+Math.random()*2)+"s";
+    c.style.animationDelay=(Math.random()*1.2)+"s";
+    confettiEl.appendChild(c);
+  }
+  setTimeout(()=>confettiEl.classList.add("hidden"),6000);
+}
+
+/* ---------- التهيئة ---------- */
+DATA.forEach((d,i)=>{
+  const k=document.createElement("div");
+  k.className="key"; k.textContent=d[0];
+  k.onclick=()=>go(i);
+  keysEl.appendChild(k);
+});
+
+$("prev").onclick=()=>go(idx-1);
+$("next").onclick=()=>go(idx+1);
+playBtn.onclick=play;
+letterEl.onclick=play;
+letterEl.onkeydown=e=>{ if(e.key===" "||e.key==="Enter"){e.preventDefault();play();} };
+
+$("story").onclick=()=>{
+  mode="story"; quizboxEl.innerHTML="";
+  $("story").classList.add("on"); $("quiz").classList.remove("on");
+  statusEl.textContent="وضع التعلّم: اضغط على الحرف أو 🔊";
+  play();
+};
+$("quiz").onclick=()=>{
+  mode="quiz"; $("quiz").classList.add("on"); $("story").classList.remove("on");
+  statusEl.textContent="وضع الاختبار: اختر الحرف الصحيح";
+  updateDisplay(); buildQuiz();
+};
+
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT") return;
+  if(e.key==="ArrowRight") go(idx+1);
+  if(e.key==="ArrowLeft") go(idx-1);
+  if(e.key===" "||e.key==="Enter"){ e.preventDefault(); if(mode==="story") play(); }
+});
+
+buildQuiz();
+updateDisplay();
+</script>
+</body>
+</html>

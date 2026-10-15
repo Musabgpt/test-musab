@@ -1,3 +1,8 @@
+def sum_two(a, b):
+    """تجمع رقمين وتُرجع الناتج."""
+    return a + b
+
+
 def add(a, b):
     return a + b
 
