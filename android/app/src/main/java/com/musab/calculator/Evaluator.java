@@ -50,15 +50,23 @@ public class Evaluator {
         return value;
     }
 
-    // Bitwise XOR (^)
+    // Bitwise XOR (^) - but ^ is also power, need to distinguish
     private double parseBitwiseXor() throws Exception {
         double value = parseBitwiseAnd();
-        while (pos < expr.length() && expr.charAt(pos) == '^') {
+        while (pos < expr.length() && expr.charAt(pos) == '^' && !isPowerOperator()) {
             pos++;
             double rhs = parseBitwiseAnd();
             value = (long) value ^ (long) rhs;
         }
         return value;
+    }
+
+    private boolean isPowerOperator() {
+        int savedPos = pos + 1;
+        while (savedPos < expr.length() && Character.isWhitespace(expr.charAt(savedPos))) savedPos++;
+        if (savedPos >= expr.length()) return false;
+        char next = expr.charAt(savedPos);
+        return Character.isDigit(next) || next == '(' || next == '-' || next == '+' || Character.isLetter(next);
     }
 
     // Bitwise AND (&)
