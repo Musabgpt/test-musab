@@ -1,34 +1,9 @@
-# M80 Project - Agent Commands
+# M80 Project - Agent Commands (Android Only)
 
 ## Project Structure
-- `server.js` — Node HTTP server (port 3000)
-- `test-sandbox.mjs` — Sandbox simulation tests
-- `android/` — Android calculator app (Gradle, Kotlin/Java)
-- `rust-calc/` — Rust calculator (optional, not built by default)
-- HTML files: calculator, phonics games, sandbox
+- `android/` — Android calculator app (Gradle Kotlin DSL, Java)
 
 ## Commands
-
-### Node / Web
-```bash
-# Start server (port 3000)
-npm start
-
-# Run sandbox tests
-npm test
-
-# Install deps (none currently)
-npm install
-```
-
-### Python
-```bash
-# Run calc.py
-python calc.py
-
-# No external deps (stdlib only)
-pip install -r requirements.txt
-```
 
 ### Android (APK)
 ```bash
@@ -41,22 +16,9 @@ cd android && ./gradlew assembleDebug --no-daemon
 
 ### GitHub Actions
 - **Build APK**: `.github/workflows/build-apk.yml` — triggers on push to main
-- **Test job**: added in workflow (runs `npm test`)
-
-### Mobile Testing (Termux + Chrome)
-```bash
-# Start server in background
-node server.js &
-
-# Open in Chrome on device
-# Use phone tool: open_url "http://127.0.0.1:3000"
-```
-
-## Ports
-- **3000** — Node server (`server.js`)
 
 ## Key Files
-- `server.js` — main web server
-- `test-sandbox.mjs` — simulation test suite
 - `android/app/build.gradle.kts` — Android build config
+- `android/app/src/main/java/com/musab/calculator/Evaluator.java` — Expression evaluator
+- `android/app/src/main/java/com/musab/calculator/MainActivity.java` — UI & logic
 - `.github/workflows/build-apk.yml` — CI/CD

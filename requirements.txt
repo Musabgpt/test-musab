@@ -1,2 +1,0 @@
-# Python dependencies for M80 project
-# Currently no external dependencies - only stdlib used
