@@ -29,12 +29,17 @@ public class Evaluator {
         return result;
     }
 
+    // ===== Precedence chain (lowest to highest) =====
+    // parseExpression (bitwise OR) -> parseBitwiseXor -> parseBitwiseAnd
+    // -> parseEquality -> parseRelational -> parseShift
+    // -> parseAdditive (+ -) -> parseMultiplicative (* / %)
+    // -> parsePower (^) -> parseUnary -> parsePostfix -> parsePrimary
+
     private double parseExpression() throws Exception {
-        double value = parseBitwiseOr();
-        return value;
+        return parseBitwiseOr();
     }
 
-    // Bitwise OR (|) - lowest precedence among bitwise
+    // Bitwise OR (|) - lowest precedence
     private double parseBitwiseOr() throws Exception {
         double value = parseBitwiseXor();
         while (pos < expr.length() && expr.charAt(pos) == '|') {
@@ -45,10 +50,10 @@ public class Evaluator {
         return value;
     }
 
-    // Bitwise XOR (^) - but ^ is also power, need to distinguish
+    // Bitwise XOR (^)
     private double parseBitwiseXor() throws Exception {
         double value = parseBitwiseAnd();
-        while (pos < expr.length() && expr.charAt(pos) == '^' && !isPowerOperator()) {
+        while (pos < expr.length() && expr.charAt(pos) == '^') {
             pos++;
             double rhs = parseBitwiseAnd();
             value = (long) value ^ (long) rhs;
@@ -67,7 +72,7 @@ public class Evaluator {
         return value;
     }
 
-    // Equality operators (== !=) - for programmer comparisons
+    // Equality operators (== !=)
     private double parseEquality() throws Exception {
         double value = parseRelational();
         while (pos + 1 < expr.length()) {
@@ -109,15 +114,15 @@ public class Evaluator {
 
     // Shift operators (<< >>)
     private double parseShift() throws Exception {
-        double value = parseTerm();
+        double value = parseAdditive();
         while (pos + 1 < expr.length()) {
             if (expr.charAt(pos) == '<' && expr.charAt(pos + 1) == '<') {
                 pos += 2;
-                double rhs = parseTerm();
+                double rhs = parseAdditive();
                 value = (long) value << (long) rhs;
             } else if (expr.charAt(pos) == '>' && expr.charAt(pos + 1) == '>') {
                 pos += 2;
-                double rhs = parseTerm();
+                double rhs = parseAdditive();
                 value = (long) value >> (long) rhs;
             } else {
                 break;
@@ -126,16 +131,25 @@ public class Evaluator {
         return value;
     }
 
-    private boolean isPowerOperator() {
-        // ^ is power if followed by number or ( or function
-        int savedPos = pos + 1;
-        while (savedPos < expr.length() && Character.isWhitespace(expr.charAt(savedPos))) savedPos++;
-        if (savedPos >= expr.length()) return false;
-        char next = expr.charAt(savedPos);
-        return Character.isDigit(next) || next == '(' || next == '-' || next == '+' || Character.isLetter(next);
+    // Additive operators (+ -)
+    private double parseAdditive() throws Exception {
+        double value = parseMultiplicative();
+        while (pos < expr.length()) {
+            char c = expr.charAt(pos);
+            if (c == '+' || c == '-' || c == '−') {
+                pos++;
+                double rhs = parseMultiplicative();
+                if (c == '+' || c == '−') value += rhs;
+                else value -= rhs;
+            } else {
+                break;
+            }
+        }
+        return value;
     }
 
-    private double parseTerm() throws Exception {
+    // Multiplicative operators (* / %)
+    private double parseMultiplicative() throws Exception {
         double value = parsePower();
         while (pos < expr.length()) {
             char c = expr.charAt(pos);
@@ -161,18 +175,19 @@ public class Evaluator {
         return value;
     }
 
+    // Power operator (^) - right associative
     private double parsePower() throws Exception {
         double value = parseUnary();
-        while (pos < expr.length() && expr.charAt(pos) == '^') {
+        if (pos < expr.length() && expr.charAt(pos) == '^') {
             pos++;
-            double rhs = parseUnary();
+            double rhs = parsePower(); // right associative
             value = Math.pow(value, rhs);
         }
         return value;
     }
 
+    // Unary operators (- + ~)
     private double parseUnary() throws Exception {
-        // Unary minus/plus
         if (pos < expr.length()) {
             char c = expr.charAt(pos);
             if (c == '-' || c == '−') {
@@ -181,17 +196,16 @@ public class Evaluator {
             } else if (c == '+') {
                 pos++;
                 return parseUnary();
+            } else if (c == '~') {
+                pos++;
+                double value = parseUnary();
+                return ~(long) value;
             }
-        }
-        // Bitwise NOT (~)
-        if (pos < expr.length() && expr.charAt(pos) == '~') {
-            pos++;
-            double value = parseUnary();
-            return ~(long) value;
         }
         return parsePostfix();
     }
 
+    // Postfix operators (!)
     private double parsePostfix() throws Exception {
         double value = parsePrimary();
         while (pos < expr.length() && expr.charAt(pos) == '!') {
@@ -201,6 +215,7 @@ public class Evaluator {
         return value;
     }
 
+    // Primary expressions: numbers, parentheses, functions, constants
     private double parsePrimary() throws Exception {
         if (pos >= expr.length()) {
             throw new Exception("Unexpected end of expression");
@@ -235,24 +250,20 @@ public class Evaluator {
 
         // Number parsing (including hex/bin/oct prefixes)
         int start = pos;
-        boolean hasPrefix = false;
         if (c == '0' && pos + 1 < expr.length()) {
             char next = expr.charAt(pos + 1);
             if (next == 'x' || next == 'X') { // hex
                 pos += 2;
-                hasPrefix = true;
                 while (pos < expr.length() && isHexDigit(expr.charAt(pos))) pos++;
                 String hexStr = expr.substring(start, pos);
                 return Long.parseLong(hexStr.substring(2), 16);
             } else if (next == 'b' || next == 'B') { // binary
                 pos += 2;
-                hasPrefix = true;
                 while (pos < expr.length() && (expr.charAt(pos) == '0' || expr.charAt(pos) == '1')) pos++;
                 String binStr = expr.substring(start, pos);
                 return Long.parseLong(binStr.substring(2), 2);
             } else if (next == 'o' || next == 'O') { // octal
                 pos += 2;
-                hasPrefix = true;
                 while (pos < expr.length() && expr.charAt(pos) >= '0' && expr.charAt(pos) <= '7') pos++;
                 String octStr = expr.substring(start, pos);
                 return Long.parseLong(octStr.substring(2), 8);
@@ -262,6 +273,10 @@ public class Evaluator {
         // Regular decimal number
         while (pos < expr.length() && (Character.isDigit(expr.charAt(pos)) || expr.charAt(pos) == '.')) {
             pos++;
+        }
+        if (pos == start) {
+            // Not a number, try function/constant
+            return parseFunctionOrConstant();
         }
         String numStr = expr.substring(start, pos);
         double value = Double.parseDouble(numStr);
@@ -310,40 +325,42 @@ public class Evaluator {
         if (pos + 4 <= expr.length()) {
             String four = expr.substring(pos, pos + 4).toLowerCase();
             if (four.equals("asin") || four.equals("acos") || four.equals("atan") ||
-                four.equals("sqrt") || four.equals("log ") || four.equals("log(") ||
-                four.equals("ln(")) {
+                four.equals("log ") || four.equals("ln(") || four.equals("sqrt")) {
                 String func = four;
-                if (func.equals("log ") || func.equals("log(")) func = "log";
-                if (func.equals("ln(")) func = "ln";
                 pos += 4;
-                if (func.equals("sqrt") && pos < expr.length() && expr.charAt(pos) == '(') pos++;
                 double arg = parseUnary();
                 switch (func) {
                     case "asin": return Math.toDegrees(Math.asin(arg));
                     case "acos": return Math.toDegrees(Math.acos(arg));
                     case "atan": return Math.toDegrees(Math.atan(arg));
+                    case "log ": return Math.log10(arg);
+                    case "ln(": return Math.log(arg);
                     case "sqrt": return Math.sqrt(arg);
-                    case "log": return Math.log10(arg);
-                    case "ln": return Math.log(arg);
                 }
             }
         }
 
-        // Should not reach here - fallback
-        throw new Exception("Unknown function or constant at position " + pos);
+        // Constants: pi, e
+        if (pos + 2 <= expr.length()) {
+            String two = expr.substring(pos, pos + 2).toLowerCase();
+            if (two.equals("pi")) {
+                pos += 2;
+                return Math.PI;
+            }
+        }
+
+        if (pos + 1 <= expr.length()) {
+            char c = expr.charAt(pos);
+            if (c == 'e') {
+                pos++;
+                return Math.E;
+            }
+        }
+
+        throw new Exception("Unknown token at position " + pos + ": " + expr.substring(pos, Math.min(pos + 10, expr.length())));
     }
 
     public static String format(double v) {
-        if (Double.isNaN(v)) return "NaN";
-        if (Double.isInfinite(v)) return v > 0 ? "∞" : "-∞";
-        if (v == Math.floor(v) && Math.abs(v) < 1e15) {
-            return String.valueOf((long) v);
-        }
-        return String.valueOf(v);
-    }
-
-    // Programmer mode: format result in current base
-    public static String formatProgrammer(double v) {
         if (Double.isNaN(v)) return "NaN";
         if (Double.isInfinite(v)) return v > 0 ? "∞" : "-∞";
         long l = (long) v;
